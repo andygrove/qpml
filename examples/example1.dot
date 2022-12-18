@@ -1,20 +1,20 @@
 digraph G {
 
-	node0 [shape=box, label="Inner Join: cs_ship_date_sk = d3.d_date_sk", style=filled, color="white"];
+	node0 [shape=box, label="Inner Join:\ncs_ship_date_sk = d3.d_date_sk", style=filled, color="white"];
 	node0 -> node0_0;
-	node0_0 [shape=box, label="Inner Join: inv_date_sk = d2.d_date_sk", style=filled, color="white"];
+	node0_0 [shape=box, label="Inner Join:\ninv_date_sk = d2.d_date_sk", style=filled, color="white"];
 	node0_0 -> node0_0_0;
-	node0_0_0 [shape=box, label="Inner Join: cs_sold_date_sk = d1.d_date_sk", style=filled, color="white"];
+	node0_0_0 [shape=box, label="Inner Join:\ncs_sold_date_sk = d1.d_date_sk", style=filled, color="white"];
 	node0_0_0 -> node0_0_0_0;
-	node0_0_0_0 [shape=box, label="Inner Join: cs_bill_hdemo_sk = hd_demo_sk", style=filled, color="white"];
+	node0_0_0_0 [shape=box, label="Inner Join:\ncs_bill_hdemo_sk = hd_demo_sk", style=filled, color="white"];
 	node0_0_0_0 -> node0_0_0_0_0;
-	node0_0_0_0_0 [shape=box, label="Inner Join: cs_bill_cdemo_sk = cd_demo_sk", style=filled, color="white"];
+	node0_0_0_0_0 [shape=box, label="Inner Join:\ncs_bill_cdemo_sk = cd_demo_sk", style=filled, color="white"];
 	node0_0_0_0_0 -> node0_0_0_0_0_0;
-	node0_0_0_0_0_0 [shape=box, label="Inner Join: i_item_sk = cs_item_sk", style=filled, color="white"];
+	node0_0_0_0_0_0 [shape=box, label="Inner Join:\ni_item_sk = cs_item_sk", style=filled, color="white"];
 	node0_0_0_0_0_0 -> node0_0_0_0_0_0_0;
-	node0_0_0_0_0_0_0 [shape=box, label="Inner Join: w_warehouse_sk = inv_warehouse_sk", style=filled, color="white"];
+	node0_0_0_0_0_0_0 [shape=box, label="Inner Join:\nw_warehouse_sk = inv_warehouse_sk", style=filled, color="white"];
 	node0_0_0_0_0_0_0 -> node0_0_0_0_0_0_0_0;
-	node0_0_0_0_0_0_0_0 [shape=box, label="Inner Join: cs_item_sk = inv_item_sk", style=filled, color="white"];
+	node0_0_0_0_0_0_0_0 [shape=box, label="Inner Join:\ncs_item_sk = inv_item_sk", style=filled, color="white"];
 	node0_0_0_0_0_0_0_0 -> node0_0_0_0_0_0_0_0_0;
 	node0_0_0_0_0_0_0_0_0 [shape=box, label="catalog_sales", style=filled, color="lightblue"];
 	node0_0_0_0_0_0_0_0 -> node0_0_0_0_0_0_0_0_1;

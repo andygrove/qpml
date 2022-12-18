@@ -1,18 +1,18 @@
-title: 'Inner Join:\ncs_ship_date_sk = d3.d_date_sk'
+title: 'Inner Join: cs_ship_date_sk = d3.d_date_sk'
 inputs:
-  - title: 'Inner Join:\ninv_date_sk = d2.d_date_sk'
+  - title: 'Inner Join: inv_date_sk = d2.d_date_sk'
     inputs:
-      - title: 'Inner Join:\ncs_sold_date_sk = d1.d_date_sk'
+      - title: 'Inner Join: cs_sold_date_sk = d1.d_date_sk'
         inputs:
-          - title: 'Inner Join:\ncs_bill_hdemo_sk = hd_demo_sk'
+          - title: 'Inner Join: cs_bill_hdemo_sk = hd_demo_sk'
             inputs:
-              - title: 'Inner Join:\ncs_bill_cdemo_sk = cd_demo_sk'
+              - title: 'Inner Join: cs_bill_cdemo_sk = cd_demo_sk'
                 inputs:
-                  - title: 'Inner Join:\ni_item_sk = cs_item_sk'
+                  - title: 'Inner Join: i_item_sk = cs_item_sk'
                     inputs:
-                      - title: 'Inner Join:\nw_warehouse_sk = inv_warehouse_sk'
+                      - title: 'Inner Join: w_warehouse_sk = inv_warehouse_sk'
                         inputs:
-                          - title: 'Inner Join:\ncs_item_sk = inv_item_sk'
+                          - title: 'Inner Join: cs_item_sk = inv_item_sk'
                             inputs:
                               - title: catalog_sales
                                 color: lightblue
