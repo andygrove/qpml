@@ -48,7 +48,9 @@ inputs:
 
 ```shell
 $ qpml print example1.yaml
+```
 
+```
 Inner Join: cs_ship_date_sk = d3.d_date_sk
   Inner Join: inv_date_sk = d2.d_date_sk
     Inner Join: cs_sold_date_sk = d1.d_date_sk
@@ -70,4 +72,9 @@ Inner Join: cs_ship_date_sk = d3.d_date_sk
 
 ### Generate Query Plan Diagram
 
-TODO
+```shell
+qpml dot example1.yaml > example1.dot
+dot -Tpng example1.dot > example1.png
+```
+
+![Example Diagram](examples/example1.png)

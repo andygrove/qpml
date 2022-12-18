@@ -4,22 +4,26 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[allow(clippy::vec_box)]
 pub struct Node {
     title: String,
-    inputs: Vec<Box<Node>>,
+    color: Option<String>,
+    inputs: Option<Vec<Box<Node>>>,
 }
 
 impl Node {
     pub fn new(title: &str, inputs: Vec<Box<Node>>) -> Self {
         Self {
             title: title.to_owned(),
-            inputs,
+            color: None,
+            inputs: Some(inputs),
         }
     }
     pub fn new_leaf(title: &str) -> Self {
         Self {
             title: title.to_owned(),
-            inputs: vec![],
+            color: None,
+            inputs: None,
         }
     }
 }
@@ -47,7 +51,9 @@ fn main() {
             display(&plan, "");
         }
         Opt::Dot { input } => {
-            todo!()
+            let yaml = fs::read_to_string(&input).expect("Unable to read file");
+            let plan: Node = serde_yaml::from_str(&yaml).unwrap();
+            generate_dot(&plan);
         }
     }
 }
@@ -56,14 +62,42 @@ fn main() {
 pub fn display(node: &Node, indent: &str) {
     println!("{}{}", indent, node.title);
     let new_indent = indent.to_owned() + "  ";
-    for child in &node.inputs {
-        display(&child, &new_indent);
+    if let Some(inputs) = &node.inputs {
+        for child in inputs {
+            display(child, &new_indent);
+        }
     }
 }
 
 pub fn read_yaml(path: &str) -> Node {
     let yaml = fs::read_to_string(path).expect("Unable to read file");
     serde_yaml::from_str(&yaml).unwrap()
+}
+
+pub fn generate_dot(node: &Node) {
+    println!("digraph G {{\n");
+    _generate_dot("node0".to_owned(), node);
+    println!("}}\n");
+}
+
+fn _generate_dot(id: String, node: &Node) {
+    let label = &node.title;
+    let color = if let Some(c) = &node.color {
+        c
+    } else {
+        "white"
+    };
+    println!(
+        "\t{} [shape=box, label=\"{}\", style=filled, color=\"{}\"];\n",
+        id, label, color
+    );
+    if let Some(inputs) = &node.inputs {
+        for (i, p) in inputs.iter().enumerate() {
+            let child_id = format!("{}_{}", id, i);
+            println!("\t{} -> {};\n", child_id, id);
+            _generate_dot(child_id.clone(), p);
+        }
+    }
 }
 
 #[cfg(test)]

@@ -15,20 +15,20 @@ inputs:
                           - title: 'Inner Join: cs_item_sk = inv_item_sk'
                             inputs:
                               - title: catalog_sales
-                                inputs: []
+                                color: lightblue
                               - title: inventory
-                                inputs: []
+                                color: lightblue
                           - title: warehouse
-                            inputs: []
+                            color: green
                       - title: item
-                        inputs: []
+                        color: green
                   - title: customer_demographics
-                    inputs: []
+                    color: green
               - title: household_demographics
-                inputs: []
+                color: green
           - title: d1
-            inputs: []
+            color: green
       - title: d2
-        inputs: []
+        color: green
   - title: d3
-    inputs: []
+    color: green
