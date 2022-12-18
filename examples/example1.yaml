@@ -19,16 +19,16 @@ inputs:
                               - title: inventory
                                 color: lightblue
                           - title: warehouse
-                            color: green
+                            color: lightgreen
                       - title: item
-                        color: green
+                        color: lightgreen
                   - title: customer_demographics
-                    color: green
+                    color: lightgreen
               - title: household_demographics
-                color: green
+                color: lightgreen
           - title: d1
-            color: green
+            color: lightgreen
       - title: d2
-        color: green
+        color: lightgreen
   - title: d3
-    color: green
+    color: lightgreen

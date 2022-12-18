@@ -40,6 +40,8 @@ enum Opt {
     Dot {
         #[structopt(parse(from_os_str))]
         input: PathBuf,
+        #[structopt(short, long)]
+        inverted: bool,
     },
 }
 
@@ -50,10 +52,10 @@ fn main() {
             let plan: Node = serde_yaml::from_str(&yaml).unwrap();
             display(&plan, "");
         }
-        Opt::Dot { input } => {
+        Opt::Dot { input, inverted } => {
             let yaml = fs::read_to_string(&input).expect("Unable to read file");
             let plan: Node = serde_yaml::from_str(&yaml).unwrap();
-            generate_dot(&plan);
+            generate_dot(&plan, inverted);
         }
     }
 }
@@ -74,13 +76,13 @@ pub fn read_yaml(path: &str) -> Node {
     serde_yaml::from_str(&yaml).unwrap()
 }
 
-pub fn generate_dot(node: &Node) {
+pub fn generate_dot(node: &Node, inverted: bool) {
     println!("digraph G {{\n");
-    _generate_dot("node0".to_owned(), node);
+    _generate_dot("node0".to_owned(), node, inverted);
     println!("}}\n");
 }
 
-fn _generate_dot(id: String, node: &Node) {
+fn _generate_dot(id: String, node: &Node, inverted: bool) {
     let label = &node.title;
     let color = if let Some(c) = &node.color {
         c
@@ -88,14 +90,18 @@ fn _generate_dot(id: String, node: &Node) {
         "white"
     };
     println!(
-        "\t{} [shape=box, label=\"{}\", style=filled, color=\"{}\"];\n",
+        "\t{} [shape=box, label=\"{}\", style=filled, color=\"{}\"];",
         id, label, color
     );
     if let Some(inputs) = &node.inputs {
         for (i, p) in inputs.iter().enumerate() {
             let child_id = format!("{}_{}", id, i);
-            println!("\t{} -> {};\n", child_id, id);
-            _generate_dot(child_id.clone(), p);
+            if inverted {
+                println!("\t{} -> {};", child_id, id);
+            } else {
+                println!("\t{} -> {};", id, child_id);
+            }
+            _generate_dot(child_id.clone(), p, inverted);
         }
     }
 }
