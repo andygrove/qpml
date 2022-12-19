@@ -5,44 +5,33 @@ of query plans for use in documentation and presentations.
 
 ## Example
 
+Here is a minimal example of a qpml file. See [examples/example1.yaml](examples/example1.yaml) for a fuller example.
+
 ```yaml
-title: 'Inner Join: cs_ship_date_sk = d3.d_date_sk'
+title: 'Inner Join: w_warehouse_sk = inv_warehouse_sk'
+operator: join
 inputs:
-  - title: 'Inner Join: inv_date_sk = d2.d_date_sk'
+  - title: 'Inner Join: cs_item_sk = inv_item_sk'
+    operator: join
     inputs:
-      - title: 'Inner Join: cs_sold_date_sk = d1.d_date_sk'
-        inputs:
-          - title: 'Inner Join: cs_bill_hdemo_sk = hd_demo_sk'
-            inputs:
-              - title: 'Inner Join: cs_bill_cdemo_sk = cd_demo_sk'
-                inputs:
-                  - title: 'Inner Join: i_item_sk = cs_item_sk'
-                    inputs:
-                      - title: 'Inner Join: w_warehouse_sk = inv_warehouse_sk'
-                        inputs:
-                          - title: 'Inner Join: cs_item_sk = inv_item_sk'
-                            inputs:
-                              - title: catalog_sales
-                                color: lightblue
-                              - title: inventory
-                                color: lightblue
-                          - title: warehouse
-                            color: lightgreen
-                      - title: item
-                        color: lightgreen
-                  - title: customer_demographics
-                    color: lightgreen
-              - title: household_demographics
-                color: lightgreen
-          - title: d1
-            color: lightgreen
-      - title: d2
-        color: lightgreen
-  - title: d3
-    color: lightgreen
+      - title: catalog_sales
+        operator: scan
+      - title: inventory
+        operator: scan
+  - title: warehouse
+    operator: scan
 ```
 
 ## Tools
+
+### Generate Query Plan Diagram
+
+```shell
+qpml dot example1.yaml > example1.dot
+dot -Tpng example1.dot > example1.png
+```
+
+![Example Diagram](examples/example1.png)
 
 ### Generate Text Plan
 
@@ -69,12 +58,3 @@ Inner Join: cs_ship_date_sk = d3.d_date_sk
     d2
   d3
 ```
-
-### Generate Query Plan Diagram
-
-```shell
-qpml dot example1.yaml > example1.dot
-dot -Tpng example1.dot > example1.png
-```
-
-![Example Diagram](examples/example1.png)

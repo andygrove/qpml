@@ -1,37 +1,45 @@
 digraph G {
 
-	node0 [shape=box, label="Inner Join:\ncs_ship_date_sk = d3.d_date_sk", style=filled, color="white"];
+node0 [shape=box; label="Inner Join:\ncs_ship_date_sk =
+ d3.d_date_sk"; fillcolor="lightyellow"; style="filled"; ];
 	node0 -> node0_0;
-	node0_0 [shape=box, label="Inner Join:\ninv_date_sk = d2.d_date_sk", style=filled, color="white"];
+node0_0 [shape=box; label="Inner Join:\ninv_date_sk = d2.
+d_date_sk"; fillcolor="lightyellow"; style="filled"; ];
 	node0_0 -> node0_0_0;
-	node0_0_0 [shape=box, label="Inner Join:\ncs_sold_date_sk = d1.d_date_sk", style=filled, color="white"];
+node0_0_0 [shape=box; label="Inner Join:\ncs_sold_date_sk =
+ d1.d_date_sk"; fillcolor="lightyellow"; style="filled"; ];
 	node0_0_0 -> node0_0_0_0;
-	node0_0_0_0 [shape=box, label="Inner Join:\ncs_bill_hdemo_sk = hd_demo_sk", style=filled, color="white"];
+node0_0_0_0 [shape=box; label="Inner Join:\ncs_bill_hdemo_sk 
+= hd_demo_sk"; fillcolor="lightyellow"; style="filled"; ];
 	node0_0_0_0 -> node0_0_0_0_0;
-	node0_0_0_0_0 [shape=box, label="Inner Join:\ncs_bill_cdemo_sk = cd_demo_sk", style=filled, color="white"];
+node0_0_0_0_0 [shape=box; label="Inner Join:\ncs_bill_cdemo_sk 
+= cd_demo_sk"; fillcolor="lightyellow"; style="filled"; ];
 	node0_0_0_0_0 -> node0_0_0_0_0_0;
-	node0_0_0_0_0_0 [shape=box, label="Inner Join:\ni_item_sk = cs_item_sk", style=filled, color="white"];
+node0_0_0_0_0_0 [shape=box; label="Inner Join:\ni_item_sk = cs_it
+em_sk"; fillcolor="lightyellow"; style="filled"; ];
 	node0_0_0_0_0_0 -> node0_0_0_0_0_0_0;
-	node0_0_0_0_0_0_0 [shape=box, label="Inner Join:\nw_warehouse_sk = inv_warehouse_sk", style=filled, color="white"];
+node0_0_0_0_0_0_0 [shape=box; label="Inner Join:\nw_warehouse_sk = 
+inv_warehouse_sk"; fillcolor="lightyellow"; style="filled"; ];
 	node0_0_0_0_0_0_0 -> node0_0_0_0_0_0_0_0;
-	node0_0_0_0_0_0_0_0 [shape=box, label="Inner Join:\ncs_item_sk = inv_item_sk", style=filled, color="white"];
+node0_0_0_0_0_0_0_0 [shape=box; label="Inner Join:\ncs_item_sk = inv_
+item_sk"; fillcolor="lightyellow"; style="filled"; ];
 	node0_0_0_0_0_0_0_0 -> node0_0_0_0_0_0_0_0_0;
-	node0_0_0_0_0_0_0_0_0 [shape=box, label="catalog_sales", style=filled, color="lightblue"];
+node0_0_0_0_0_0_0_0_0 [shape=box; label="catalog_sales"; color="lightblue"; style="filled"; ];
 	node0_0_0_0_0_0_0_0 -> node0_0_0_0_0_0_0_0_1;
-	node0_0_0_0_0_0_0_0_1 [shape=box, label="inventory", style=filled, color="lightblue"];
+node0_0_0_0_0_0_0_0_1 [shape=box; label="inventory"; color="lightblue"; style="filled"; ];
 	node0_0_0_0_0_0_0 -> node0_0_0_0_0_0_0_1;
-	node0_0_0_0_0_0_0_1 [shape=box, label="warehouse", style=filled, color="lightgreen"];
+node0_0_0_0_0_0_0_1 [shape=box; label="warehouse"; color="lightgreen"; style="filled"; ];
 	node0_0_0_0_0_0 -> node0_0_0_0_0_0_1;
-	node0_0_0_0_0_0_1 [shape=box, label="item", style=filled, color="lightgreen"];
+node0_0_0_0_0_0_1 [shape=box; label="item"; color="lightgreen"; style="filled"; ];
 	node0_0_0_0_0 -> node0_0_0_0_0_1;
-	node0_0_0_0_0_1 [shape=box, label="customer_demographics", style=filled, color="lightgreen"];
+node0_0_0_0_0_1 [shape=box; label="customer_demographics"; color="lightgreen"; style="filled"; ];
 	node0_0_0_0 -> node0_0_0_0_1;
-	node0_0_0_0_1 [shape=box, label="household_demographics", style=filled, color="lightgreen"];
+node0_0_0_0_1 [shape=box; label="household_demographics"; color="lightgreen"; style="filled"; ];
 	node0_0_0 -> node0_0_0_1;
-	node0_0_0_1 [shape=box, label="d1", style=filled, color="lightgreen"];
+node0_0_0_1 [shape=box; label="d1"; color="lightgreen"; style="filled"; ];
 	node0_0 -> node0_0_1;
-	node0_0_1 [shape=box, label="d2", style=filled, color="lightgreen"];
+node0_0_1 [shape=box; label="d2"; color="lightgreen"; style="filled"; ];
 	node0 -> node0_1;
-	node0_1 [shape=box, label="d3", style=filled, color="lightgreen"];
+node0_1 [shape=box; label="d3"; color="lightgreen"; style="filled"; ];
 }
 

@@ -1,0 +1,13 @@
+title: 'Inner Join: w_warehouse_sk = inv_warehouse_sk'
+operator: join
+inputs:
+  - title: 'Inner Join: cs_item_sk = inv_item_sk'
+    operator: join
+    inputs:
+      - title: catalog_sales
+        operator: scan
+        color: lightblue
+      - title: inventory
+        operator: scan
+  - title: warehouse
+    operator: scan
