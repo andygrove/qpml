@@ -63,6 +63,17 @@ Inner Join: cs_ship_date_sk = d3.d_date_sk
 
 ## Apache Spark
 
+Add a dependency on `jackson-dataformat-yaml`:
+```xml
+<dependency>
+    <groupId>com.fasterxml.jackson.dataformat</groupId>
+    <artifactId>jackson-dataformat-yaml</artifactId>
+    <version>${scala.binary.version}.3</version>
+</dependency>
+```
+
+Sample code for generating QPML text from a Spark logical plan:
+
 ```scala
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
