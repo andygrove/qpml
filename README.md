@@ -68,7 +68,7 @@ Add a dependency on `jackson-dataformat-yaml`:
 <dependency>
     <groupId>com.fasterxml.jackson.dataformat</groupId>
     <artifactId>jackson-dataformat-yaml</artifactId>
-    <version>${scala.binary.version}.3</version>
+    <version>2.12.3</version>
 </dependency>
 ```
 
