@@ -1,32 +1,9 @@
 use serde::{Deserialize, Serialize};
+use std::fmt;
+use std::fmt::Formatter;
 use std::fs;
 use std::path::PathBuf;
 use structopt::StructOpt;
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-#[allow(clippy::vec_box)]
-pub struct Node {
-    title: String,
-    color: Option<String>,
-    inputs: Option<Vec<Box<Node>>>,
-}
-
-impl Node {
-    pub fn new(title: &str, inputs: Vec<Box<Node>>) -> Self {
-        Self {
-            title: title.to_owned(),
-            color: None,
-            inputs: Some(inputs),
-        }
-    }
-    pub fn new_leaf(title: &str) -> Self {
-        Self {
-            title: title.to_owned(),
-            color: None,
-            inputs: None,
-        }
-    }
-}
 
 #[derive(StructOpt)]
 #[structopt(about = "Query Plan Markup Language")]
@@ -40,7 +17,7 @@ enum Opt {
     Dot {
         #[structopt(parse(from_os_str))]
         input: PathBuf,
-        #[structopt(short, long)]
+        #[structopt(long)]
         inverted: bool,
     },
 }
@@ -58,6 +35,80 @@ fn main() {
             generate_dot(&plan, inverted);
         }
     }
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[allow(clippy::vec_box)]
+pub struct Node {
+    title: String,
+    color: Option<String>,
+    operator: Option<String>,
+    inputs: Option<Vec<Box<Node>>>,
+}
+
+impl Node {
+    pub fn new(title: &str, inputs: Vec<Box<Node>>) -> Self {
+        Self {
+            title: title.to_owned(),
+            color: None,
+            operator: None,
+            inputs: Some(inputs),
+        }
+    }
+    pub fn new_leaf(title: &str) -> Self {
+        Self {
+            title: title.to_owned(),
+            color: None,
+            operator: None,
+            inputs: None,
+        }
+    }
+}
+
+struct DotNode {
+    name: String,
+    label: Option<String>,
+    color: Option<String>,
+    fill_color: Option<String>,
+    style: Option<String>,
+}
+
+impl fmt::Display for DotNode {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name)?;
+
+        // optional attributes
+        let mut attr = "".to_string();
+
+        attr.push_str("shape=box; ");
+
+        if let Some(label) = &self.label {
+            attr.push_str(&format!("label=\"{}\"; ", wrap(label)));
+        }
+        if let Some(color) = &self.color {
+            attr.push_str(&format!("color=\"{}\"; ", color));
+        }
+        if let Some(color) = &self.fill_color {
+            attr.push_str(&format!("fillcolor=\"{}\"; ", color));
+        }
+        if let Some(style) = &self.style {
+            attr.push_str(&format!("style=\"{}\"; ", style));
+        }
+        write!(f, " [{}];", attr)
+    }
+}
+
+fn wrap(s: &str) -> String {
+    let mut ret = String::new();
+    let mut i = 0;
+    let line_len = 30;
+    while i < s.len() {
+        let end = (i + line_len).min(s.len());
+        ret.push_str(&s[i..end]);
+        ret.push('\n');
+        i += line_len;
+    }
+    ret.trim().to_string()
 }
 
 /// Show a text representation of the plan
@@ -83,16 +134,33 @@ pub fn generate_dot(node: &Node, inverted: bool) {
 }
 
 fn _generate_dot(id: String, node: &Node, inverted: bool) {
-    let label = &node.title;
-    let color = if let Some(c) = &node.color {
-        c
-    } else {
-        "white"
+    let mut dot_node = DotNode {
+        name: id.clone(),
+        label: Some(node.title.clone()),
+        color: None,
+        fill_color: None,
+        style: None,
     };
-    println!(
-        "\t{} [shape=box, label=\"{}\", style=filled, color=\"{}\"];",
-        id, label, color
-    );
+
+    if let Some(c) = &node.color {
+        dot_node.color = Some(c.clone());
+        dot_node.style = Some("filled".to_owned());
+    } else if let Some(operator) = &node.operator {
+        let c = match operator.as_str() {
+            "scan" => Some("lightblue"),
+            "join" => Some("lightyellow"),
+            "filter" => Some("aquamarine"),
+            "project" => None,
+            _ => None,
+        };
+        if let Some(c) = c {
+            dot_node.fill_color = Some(c.to_string());
+            dot_node.style = Some("filled".to_owned());
+        }
+    }
+
+    println!("{}", dot_node);
+
     if let Some(inputs) = &node.inputs {
         for (i, p) in inputs.iter().enumerate() {
             let child_id = format!("{}_{}", id, i);
