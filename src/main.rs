@@ -1,3 +1,4 @@
+use datafusion::logical_expr::LogicalPlan;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::fmt::Formatter;
@@ -172,6 +173,38 @@ fn _generate_dot(id: String, node: &Node, inverted: bool) {
             _generate_dot(child_id.clone(), p, inverted);
         }
     }
+}
+
+/// Create QPML from a DataFusion logical plan
+pub fn from_datafusion(plan: &LogicalPlan) -> Box<Node> {
+    let children = plan.inputs().iter().map(|x| from_datafusion(x)).collect();
+    let mut node = Node::new("unknown", children);
+    match plan {
+        LogicalPlan::TableScan(scan) => {
+            node.title = scan.table_name.clone();
+            node.operator = Some("scan".to_owned());
+        }
+        LogicalPlan::Filter(filter) => {
+            node.title = format!("Filter: {}", filter.predicate());
+            node.operator = Some("filter".to_owned());
+        }
+        LogicalPlan::Projection(projection) => {
+            let expr: Vec<String> = projection.expr.iter().map(|e| format!("{}", e)).collect();
+            node.title = format!("Projection: {}", expr.join(", "));
+            node.operator = Some("projection".to_owned());
+        }
+        LogicalPlan::Join(join) => {
+            let join_cols: Vec<String> = join
+                .on
+                .iter()
+                .map(|(l, r)| format!("{} = {}", l, r))
+                .collect();
+            node.title = format!("Join: {}", join_cols.join(" AND "));
+            node.operator = Some("join".to_owned());
+        }
+        _ => {}
+    }
+    Box::new(node)
 }
 
 #[cfg(test)]
