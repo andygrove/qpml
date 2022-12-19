@@ -1,11 +1,15 @@
 [package]
 name = "qpml"
 description = "Query Plan Markup Language (QPML)"
-version = "0.4.0"
+version = "0.5.0"
 license = "Apache-2.0"
 homepage = "https://github.com/andygrove/qpml"
 repository = "https://github.com/andygrove/qpml"
 edition = "2021"
+
+[[bin]]
+name = "qpml"
+path = "src/bin/main.rs"
 
 [lib]
 name = "qpml"
