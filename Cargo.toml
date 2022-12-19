@@ -1,14 +1,19 @@
 [package]
 name = "qpml"
 description = "Query Plan Markup Language (QPML)"
-version = "0.3.0"
+version = "0.4.0"
 license = "Apache-2.0"
 homepage = "https://github.com/andygrove/qpml"
 repository = "https://github.com/andygrove/qpml"
 edition = "2021"
+
+[lib]
+name = "qpml"
+path = "src/lib.rs"
 
 [dependencies]
 datafusion = "15.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9"
 structopt = { version = "0.3", default-features = false }
+
