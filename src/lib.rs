@@ -4,7 +4,7 @@ use std::fmt;
 use std::fmt::Formatter;
 use std::fs;
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Default)]
 #[allow(clippy::vec_box)]
 pub struct Node {
     title: String,
@@ -47,19 +47,19 @@ impl fmt::Display for DotNode {
         // optional attributes
         let mut attr = "".to_string();
 
-        attr.push_str("shape=box; ");
+        attr.push_str("shape=box");
 
         if let Some(label) = &self.label {
-            attr.push_str(&format!("label=\"{}\"; ", wrap(label)));
+            attr.push_str(&format!("; label=\"{}\"", wrap(label)));
         }
         if let Some(color) = &self.color {
-            attr.push_str(&format!("color=\"{}\"; ", color));
+            attr.push_str(&format!("; color=\"{}\"", color));
         }
         if let Some(color) = &self.fill_color {
-            attr.push_str(&format!("fillcolor=\"{}\"; ", color));
+            attr.push_str(&format!("; fillcolor=\"{}\"", color));
         }
         if let Some(style) = &self.style {
-            attr.push_str(&format!("style=\"{}\"; ", style));
+            attr.push_str(&format!("; style=\"{}\"", style));
         }
         write!(f, " [{}];", attr)
     }
@@ -71,11 +71,16 @@ fn wrap(s: &str) -> String {
     let line_len = 30;
     while i < s.len() {
         let end = (i + line_len).min(s.len());
-        ret.push_str(&s[i..end]);
-        ret.push('\n');
+        let line = &s[i..end];
+        // escape quotes
+        let line = line.replace("\"", "\\\"");
+        ret.push_str(&line);
+        if i + line_len < s.len() {
+            ret.push_str("\\n");
+        }
         i += line_len;
     }
-    ret.trim().to_string()
+    ret
 }
 
 /// Show a text representation of the plan
