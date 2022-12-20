@@ -59,7 +59,7 @@ Inner Join: cs_ship_date_sk = d3.d_date_sk
   d3
 ```
 
-# Generating QPML from Query Engines
+# Converting Existing Query Plans to QPML
 
 ## Apache Spark
 
@@ -118,4 +118,32 @@ object Qpml {
   }
 
 }
+```
+
+## Apache Arrow DataFusion & Ballista
+
+The qpml crate includes a utility function `from_datafusion` for converting DataFusion logical plans into QPML 
+format.
+
+The following dependencies are required:
+
+```toml
+datafusion = "15.0"
+qpml = "0.5"
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+```
+
+Here is a code sample for writing a DataFusion logical plan to disk in QPML format.
+
+```rust
+use qpml::from_datafusion;
+use std::fs::File;
+use std::io::BufWriter;
+
+let qpml = from_datafusion(&plan);
+let filename = format!("q{}.qpml", query_no);
+let file = File::create(&filename)?;
+let mut file = BufWriter::new(file);
+serde_yaml::to_writer(&mut file, &qpml).unwrap();
 ```
