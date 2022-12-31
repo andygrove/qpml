@@ -30,18 +30,18 @@ fn main() {
     match Opt::from_args() {
         Opt::Print { input } => {
             let yaml = fs::read_to_string(&input).expect("Unable to read file");
-            let plan: qpml::Node = serde_yaml::from_str(&yaml).unwrap();
-            qpml::display(&plan, "");
+            let doc: qpml::Document = serde_yaml::from_str(&yaml).unwrap();
+            qpml::generate_text(&doc);
         }
         Opt::Dot { input, inverted } => {
             let yaml = fs::read_to_string(&input).expect("Unable to read file");
-            let plan: qpml::Node = serde_yaml::from_str(&yaml).unwrap();
-            qpml::generate_dot(&plan, inverted);
+            let doc: qpml::Document = serde_yaml::from_str(&yaml).unwrap();
+            qpml::generate_dot(&doc, inverted);
         }
         Opt::Mermaid { input, inverted } => {
             let yaml = fs::read_to_string(&input).expect("Unable to read file");
-            let plan: qpml::Node = serde_yaml::from_str(&yaml).unwrap();
-            qpml::generate_mermaid(&plan, inverted);
+            let doc: qpml::Document = serde_yaml::from_str(&yaml).unwrap();
+            qpml::generate_mermaid(&doc, inverted);
         }
     }
 }
