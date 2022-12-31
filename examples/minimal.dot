@@ -1,0 +1,13 @@
+digraph G {
+
+node0 [shape=box; label="Inner Join: w_warehouse_sk = i\nnv_warehouse_sk"];
+	node0 -> node0_0;
+node0_0 [shape=box; label="Inner Join: cs_item_sk = inv_i\ntem_sk"];
+	node0_0 -> node0_0_0;
+node0_0_0 [shape=box; label="catalog_sales"];
+	node0_0 -> node0_0_1;
+node0_0_1 [shape=box; label="inventory"];
+	node0 -> node0_1;
+node0_1 [shape=box; label="warehouse"];
+}
+
