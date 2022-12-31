@@ -1,7 +1,0 @@
-title: 'Inner Join: w_warehouse_sk = inv_warehouse_sk'
-inputs:
-  - title: 'Inner Join: cs_item_sk = inv_item_sk'
-    inputs:
-      - title: catalog_sales
-      - title: inventory
-  - title: warehouse

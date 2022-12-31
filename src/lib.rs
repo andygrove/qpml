@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use datafusion::logical_expr::LogicalPlan;
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -6,28 +7,52 @@ use std::fs;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default)]
 #[allow(clippy::vec_box)]
+pub struct Document {
+    diagram: Box<Node>,
+    styles: Vec<Style>
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize, Default)]
+#[allow(clippy::vec_box)]
 pub struct Node {
     title: String,
-    color: Option<String>,
-    operator: Option<String>,
-    inputs: Option<Vec<Box<Node>>>,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    style: Option<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    inputs: Vec<Box<Node>>,
 }
 
 impl Node {
     pub fn new(title: &str, inputs: Vec<Box<Node>>) -> Self {
         Self {
             title: title.to_owned(),
-            color: None,
-            operator: None,
-            inputs: Some(inputs),
+            style: None,
+            inputs,
         }
     }
-    pub fn new_leaf(title: &str) -> Self {
+    pub fn new_leaf(title: &str, style: Option<&str>) -> Self {
         Self {
             title: title.to_owned(),
-            color: None,
-            operator: None,
-            inputs: None,
+            style: style.map(|name| name.to_owned()),
+            inputs: vec![],
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize, Default, Clone)]
+#[allow(clippy::vec_box)]
+pub struct Style {
+    name: String,
+    color: String,
+    shape: String
+}
+
+impl Style {
+    pub fn new(name: &str, color: &str, shape: &str) -> Self {
+        Self {
+            name: name.to_owned(),
+            color: color.to_owned(),
+            shape: shape.to_owned(),
         }
     }
 }
@@ -84,13 +109,15 @@ fn wrap(s: &str) -> String {
 }
 
 /// Show a text representation of the plan
-pub fn display(node: &Node, indent: &str) {
+pub fn generate_text(node: &Document) {
+    _display(&node.diagram, "");
+}
+
+pub fn _display(node: &Node, indent: &str) {
     println!("{}{}", indent, node.title);
     let new_indent = indent.to_owned() + "  ";
-    if let Some(inputs) = &node.inputs {
-        for child in inputs {
-            display(child, &new_indent);
-        }
+    for child in &node.inputs {
+        _display(child.as_ref(), &new_indent);
     }
 }
 
@@ -99,13 +126,20 @@ pub fn read_yaml(path: &str) -> Node {
     serde_yaml::from_str(&yaml).unwrap()
 }
 
-pub fn generate_dot(node: &Node, inverted: bool) {
+pub fn generate_dot(doc: &Document, inverted: bool) {
+
+    // build styles
+    let mut styles: HashMap<String, Style> = HashMap::new();
+    for style in &doc.styles {
+        styles.insert(style.name.clone(), style.to_owned());
+    }
+
     println!("digraph G {{\n");
-    _generate_dot("node0".to_owned(), node, inverted);
+    _generate_dot("node0".to_owned(), &doc.diagram, &styles, inverted);
     println!("}}\n");
 }
 
-fn _generate_dot(id: String, node: &Node, inverted: bool) {
+fn _generate_dot(id: String, node: &Node, styles: &HashMap<String,Style>, inverted: bool) {
     let mut dot_node = DotNode {
         name: id.clone(),
         label: Some(node.title.clone()),
@@ -114,56 +148,45 @@ fn _generate_dot(id: String, node: &Node, inverted: bool) {
         style: None,
     };
 
-    if let Some(c) = &node.color {
-        dot_node.color = Some(c.clone());
-        dot_node.style = Some("filled".to_owned());
-    } else if let Some(operator) = &node.operator {
-        let c = match operator.as_str() {
-            "scan" => Some("lightblue"),
-            "join" => Some("lightyellow"),
-            "filter" => Some("aquamarine"),
-            "project" => None,
-            _ => None,
-        };
-        if let Some(c) = c {
-            dot_node.fill_color = Some(c.to_string());
-            dot_node.style = Some("filled".to_owned());
+    if let Some(s) = &node.style {
+        if let Some(def) = styles.get(s) {
+            dot_node.color = Some(def.color.clone());
+            //dot_node.style = Some("filled".clone());
+        } else {
+            println!("Warning! Node refers to undefined style '{}'", s);
         }
-    }
+    } else {
 
+    }
     println!("{}", dot_node);
 
-    if let Some(inputs) = &node.inputs {
-        for (i, p) in inputs.iter().enumerate() {
-            let child_id = format!("{}_{}", id, i);
-            if inverted {
-                println!("\t{} -> {};", child_id, id);
-            } else {
-                println!("\t{} -> {};", id, child_id);
-            }
-            _generate_dot(child_id.clone(), p, inverted);
+    for (i, p) in node.inputs.iter().enumerate() {
+        let child_id = format!("{}_{}", id, i);
+        if inverted {
+            println!("\t{} -> {};", child_id, id);
+        } else {
+            println!("\t{} -> {};", id, child_id);
         }
+        _generate_dot(child_id.clone(), p, styles, inverted);
     }
 }
 
-pub fn generate_mermaid(node: &Node, inverted: bool) {
+pub fn generate_mermaid(doc: &Document, inverted: bool) {
     println!("```mermaid");
     println!("flowchart TD");
-    _generate_mermaid("node0".to_owned(), node, inverted);
+    _generate_mermaid("node0".to_owned(), &doc.diagram, inverted);
     println!("```");
 }
 
 fn _generate_mermaid(id: String, node: &Node, inverted: bool) {
-    if let Some(inputs) = &node.inputs {
-        for (i, p) in inputs.iter().enumerate() {
-            let child_id = format!("{}_{}", id, i);
-            if inverted {
-                println!("{}[{}] --> {}[{}]", child_id, p.title, id, node.title);
-            } else {
-                println!("{}[{}] --> {}[{}]", id, node.title, child_id, p.title);
-            }
-            _generate_mermaid(child_id.clone(), p, inverted);
+    for (i, p) in node.inputs.iter().enumerate() {
+        let child_id = format!("{}_{}", id, i);
+        if inverted {
+            println!("{}[{}] --> {}[{}]", child_id, p.title, id, node.title);
+        } else {
+            println!("{}[{}] --> {}[{}]", id, node.title, child_id, p.title);
         }
+        _generate_mermaid(child_id.clone(), p, inverted);
     }
 }
 
@@ -174,16 +197,16 @@ pub fn from_datafusion(plan: &LogicalPlan) -> Box<Node> {
     match plan {
         LogicalPlan::TableScan(scan) => {
             node.title = scan.table_name.clone();
-            node.operator = Some("scan".to_owned());
+            node.style = Some("scan".to_owned());
         }
         LogicalPlan::Filter(filter) => {
             node.title = format!("Filter: {}", filter.predicate());
-            node.operator = Some("filter".to_owned());
+            node.style = Some("filter".to_owned());
         }
         LogicalPlan::Projection(projection) => {
             let expr: Vec<String> = projection.expr.iter().map(|e| format!("{}", e)).collect();
             node.title = format!("Projection: {}", expr.join(", "));
-            node.operator = Some("projection".to_owned());
+            node.style = Some("projection".to_owned());
         }
         LogicalPlan::Join(join) => {
             let join_cols: Vec<String> = join
@@ -192,7 +215,7 @@ pub fn from_datafusion(plan: &LogicalPlan) -> Box<Node> {
                 .map(|(l, r)| format!("{} = {}", l, r))
                 .collect();
             node.title = format!("Join: {}", join_cols.join(" AND "));
-            node.operator = Some("join".to_owned());
+            node.style = Some("join".to_owned());
         }
         _ => {}
     }
@@ -235,32 +258,44 @@ mod tests {
                                                                 Box::new(Node::new(
                                                                     "Inner Join: cs_item_sk = inv_item_sk",
                                                                     vec![
-                                                                        Box::new(Node::new_leaf("catalog_sales")),
-                                                                        Box::new(Node::new_leaf("inventory")),
+                                                                        Box::new(Node::new_leaf("catalog_sales", Some("table"))),
+                                                                        Box::new(Node::new_leaf("inventory", Some("table"))),
                                                                     ],
                                                                 )),
-                                                                Box::new(Node::new_leaf("warehouse")),
+                                                                Box::new(Node::new_leaf("warehouse", Some("table"))),
                                                             ],
                                                         )),
-                                                        Box::new(Node::new_leaf("item")),
+                                                        Box::new(Node::new_leaf("item", Some("table"))),
                                                     ],
                                                 )),
-                                                Box::new(Node::new_leaf("customer_demographics")),
+                                                Box::new(Node::new_leaf("customer_demographics", Some("table"))),
                                             ],
                                         )),
-                                        Box::new(Node::new_leaf("household_demographics")),
+                                        Box::new(Node::new_leaf("household_demographics", Some("table"))),
                                     ],
                                 )),
-                                Box::new(Node::new_leaf("d1")),
+                                Box::new(Node::new_leaf("d1", Some("table"))),
                             ],
                         )),
-                        Box::new(Node::new_leaf("d2")),
+                        Box::new(Node::new_leaf("d2", Some("table"))),
                     ],
                 )),
-                Box::new(Node::new_leaf("d3")),
+                Box::new(Node::new_leaf("d3", Some("table"))),
             ],
         ));
-        let yaml = serde_yaml::to_string(&example).unwrap();
+
+        let doc = Document {
+            diagram: example,
+            styles: vec![
+                Style::new("table", "blue", "rectangle"),
+                Style::new("operator", "green", "rectangle"),
+            ]
+        };
+
+        let yaml = serde_yaml::to_string(&doc).unwrap();
         println!("{}", yaml);
+
+        let doc2: Document = serde_yaml::from_str(&yaml).unwrap();
+        println!("{:?}", doc2);
     }
 }
