@@ -17,6 +17,13 @@ enum Opt {
         #[structopt(long)]
         inverted: bool,
     },
+    /// Generate a Mermaid diagram
+    Mermaid {
+        #[structopt(parse(from_os_str))]
+        input: PathBuf,
+        #[structopt(long)]
+        inverted: bool,
+    },
 }
 
 fn main() {
@@ -30,6 +37,11 @@ fn main() {
             let yaml = fs::read_to_string(&input).expect("Unable to read file");
             let plan: qpml::Node = serde_yaml::from_str(&yaml).unwrap();
             qpml::generate_dot(&plan, inverted);
+        }
+        Opt::Mermaid { input, inverted } => {
+            let yaml = fs::read_to_string(&input).expect("Unable to read file");
+            let plan: qpml::Node = serde_yaml::from_str(&yaml).unwrap();
+            qpml::generate_mermaid(&plan, inverted);
         }
     }
 }

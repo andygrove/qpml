@@ -24,6 +24,27 @@ inputs:
 
 ## Tools
 
+### Generate Mermaid Diagram
+
+```mermaid
+node0 --> node0_0[Inner Join:\ninv_date_sk = d2.d_date_sk]
+node0_0 --> node0_0_0[Inner Join:\ncs_sold_date_sk = d1.d_date_sk]
+node0_0_0 --> node0_0_0_0[Inner Join:\ncs_bill_hdemo_sk = hd_demo_sk]
+node0_0_0_0 --> node0_0_0_0_0[Inner Join:\ncs_bill_cdemo_sk = cd_demo_sk]
+node0_0_0_0_0 --> node0_0_0_0_0_0[Inner Join:\ni_item_sk = cs_item_sk]
+node0_0_0_0_0_0 --> node0_0_0_0_0_0_0[Inner Join:\nw_warehouse_sk = inv_warehouse_sk]
+node0_0_0_0_0_0_0 --> node0_0_0_0_0_0_0_0[Inner Join:\ncs_item_sk = inv_item_sk]
+node0_0_0_0_0_0_0_0 --> node0_0_0_0_0_0_0_0_0[catalog_sales]
+node0_0_0_0_0_0_0_0 --> node0_0_0_0_0_0_0_0_1[inventory]
+node0_0_0_0_0_0_0 --> node0_0_0_0_0_0_0_1[warehouse]
+node0_0_0_0_0_0 --> node0_0_0_0_0_0_1[item]
+node0_0_0_0_0 --> node0_0_0_0_0_1[customer_demographics]
+node0_0_0_0 --> node0_0_0_0_1[household_demographics]
+node0_0_0 --> node0_0_0_1[d1]
+node0_0 --> node0_0_1[d2]
+node0 --> node0_1[d3]
+```
+
 ### Generate Query Plan Diagram
 
 ```shell

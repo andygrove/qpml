@@ -146,6 +146,26 @@ fn _generate_dot(id: String, node: &Node, inverted: bool) {
     }
 }
 
+pub fn generate_mermaid(node: &Node, inverted: bool) {
+    println!("```mermaid\n");
+    _generate_mermaid("node0".to_owned(), node, inverted);
+    println!("```\n");
+}
+
+fn _generate_mermaid(id: String, node: &Node, inverted: bool) {
+    if let Some(inputs) = &node.inputs {
+        for (i, p) in inputs.iter().enumerate() {
+            let child_id = format!("{}_{}", id, i);
+            if inverted {
+                println!("{} --> {}", child_id, id);
+            } else {
+                println!("{} --> {}[{}]", id, child_id, p.title);
+            }
+            _generate_mermaid(child_id.clone(), p, inverted);
+        }
+    }
+}
+
 /// Create QPML from a DataFusion logical plan
 pub fn from_datafusion(plan: &LogicalPlan) -> Box<Node> {
     let children = plan.inputs().iter().map(|x| from_datafusion(x)).collect();
