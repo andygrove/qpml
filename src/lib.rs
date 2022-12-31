@@ -205,7 +205,7 @@ mod tests {
 
     #[test]
     fn test_read_yaml() {
-        let node = read_yaml("./examples/example1.yaml");
+        let node = read_yaml("./examples/example1.qpml");
         println!("{:?}", node);
     }
 

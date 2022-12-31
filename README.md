@@ -1,84 +1,57 @@
 # Query Plan Markup Language (QPML)
 
-QPML is a YAML-based DSL for describing query plans for the purposes of producing diagrams and textual representations
-of query plans for use in documentation and presentations.
-
-## Example
+QPML is a YAML-based DSL for describing query plans, expression trees, or any other tree structure, for the purposes 
+of producing diagrams and textual representations for use in documentation and presentations.
 
 Here is a minimal example of a qpml file. See [examples/example1.yaml](examples/example1.yaml) for a fuller example.
 
 ```yaml
 title: 'Inner Join: w_warehouse_sk = inv_warehouse_sk'
-operator: join
 inputs:
   - title: 'Inner Join: cs_item_sk = inv_item_sk'
-    operator: join
     inputs:
       - title: catalog_sales
-        operator: scan
       - title: inventory
-        operator: scan
   - title: warehouse
-    operator: scan
 ```
 
-## Tools
+# Example Generated Output 
 
-### Generate Mermaid Diagram
+## GitHub Mermaid Diagram
+
+```shell
+$ qpml mermaid minimal.qpml
+```
 
 ```mermaid
 flowchart TD
-node0[Inner Join: cs_ship_date_sk = d3.d_date_sk] --> node0_0[Inner Join: inv_date_sk = d2.d_date_sk]
-node0_0[Inner Join: inv_date_sk = d2.d_date_sk] --> node0_0_0[Inner Join: cs_sold_date_sk = d1.d_date_sk]
-node0_0_0[Inner Join: cs_sold_date_sk = d1.d_date_sk] --> node0_0_0_0[Inner Join: cs_bill_hdemo_sk = hd_demo_sk]
-node0_0_0_0[Inner Join: cs_bill_hdemo_sk = hd_demo_sk] --> node0_0_0_0_0[Inner Join: cs_bill_cdemo_sk = cd_demo_sk]
-node0_0_0_0_0[Inner Join: cs_bill_cdemo_sk = cd_demo_sk] --> node0_0_0_0_0_0[Inner Join: i_item_sk = cs_item_sk]
-node0_0_0_0_0_0[Inner Join: i_item_sk = cs_item_sk] --> node0_0_0_0_0_0_0[Inner Join: w_warehouse_sk = inv_warehouse_sk]
-node0_0_0_0_0_0_0[Inner Join: w_warehouse_sk = inv_warehouse_sk] --> node0_0_0_0_0_0_0_0[Inner Join: cs_item_sk = inv_item_sk]
-node0_0_0_0_0_0_0_0[Inner Join: cs_item_sk = inv_item_sk] --> node0_0_0_0_0_0_0_0_0[catalog_sales]
-node0_0_0_0_0_0_0_0[Inner Join: cs_item_sk = inv_item_sk] --> node0_0_0_0_0_0_0_0_1[inventory]
-node0_0_0_0_0_0_0[Inner Join: w_warehouse_sk = inv_warehouse_sk] --> node0_0_0_0_0_0_0_1[warehouse]
-node0_0_0_0_0_0[Inner Join: i_item_sk = cs_item_sk] --> node0_0_0_0_0_0_1[item]
-node0_0_0_0_0[Inner Join: cs_bill_cdemo_sk = cd_demo_sk] --> node0_0_0_0_0_1[customer_demographics]
-node0_0_0_0[Inner Join: cs_bill_hdemo_sk = hd_demo_sk] --> node0_0_0_0_1[household_demographics]
-node0_0_0[Inner Join: cs_sold_date_sk = d1.d_date_sk] --> node0_0_0_1[d1]
-node0_0[Inner Join: inv_date_sk = d2.d_date_sk] --> node0_0_1[d2]
-node0[Inner Join: cs_ship_date_sk = d3.d_date_sk] --> node0_1[d3]
+node0[Inner Join: w_warehouse_sk = inv_warehouse_sk] --> node0_0[Inner Join: cs_item_sk = inv_item_sk]
+node0_0[Inner Join: cs_item_sk = inv_item_sk] --> node0_0_0[catalog_sales]
+node0_0[Inner Join: cs_item_sk = inv_item_sk] --> node0_0_1[inventory]
+node0[Inner Join: w_warehouse_sk = inv_warehouse_sk] --> node0_1[warehouse]
 ```
 
-### Generate Query Plan Diagram
+## GraphViz
 
 ```shell
-qpml dot example1.yaml > example1.dot
+qpml dot minimal.qpml > example1.dot
 dot -Tpng example1.dot > example1.png
 ```
 
-![Example Diagram](examples/example1.png)
+![Example Diagram](examples/minimal.png)
 
-### Generate Text Plan
+## Text
 
 ```shell
-$ qpml print example1.yaml
+$ qpml print minimal.qpml
 ```
 
-```
-Inner Join: cs_ship_date_sk = d3.d_date_sk
-  Inner Join: inv_date_sk = d2.d_date_sk
-    Inner Join: cs_sold_date_sk = d1.d_date_sk
-      Inner Join: cs_bill_hdemo_sk = hd_demo_sk
-        Inner Join: cs_bill_cdemo_sk = cd_demo_sk
-          Inner Join: i_item_sk = cs_item_sk
-            Inner Join: w_warehouse_sk = inv_warehouse_sk
-              Inner Join: cs_item_sk = inv_item_sk
-                catalog_sales
-                inventory
-              warehouse
-            item
-          customer_demographics
-        household_demographics
-      d1
-    d2
-  d3
+```text
+Inner Join: w_warehouse_sk = inv_warehouse_sk
+  Inner Join: cs_item_sk = inv_item_sk
+    catalog_sales
+    inventory
+  warehouse
 ```
 
 # Converting Existing Query Plans to QPML
