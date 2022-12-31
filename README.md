@@ -20,7 +20,7 @@ inputs:
 ## GitHub Mermaid Diagram
 
 ```shell
-$ qpml mermaid minimal.qpml
+$ qpml mermaid minimal.qpml > minmal.md
 ```
 
 ```mermaid
@@ -34,8 +34,8 @@ node0[Inner Join: w_warehouse_sk = inv_warehouse_sk] --> node0_1[warehouse]
 ## GraphViz
 
 ```shell
-qpml dot minimal.qpml > example1.dot
-dot -Tpng example1.dot > example1.png
+qpml dot minimal.qpml > minimal.dot
+dot -Tpng minimal.dot > minimal.png
 ```
 
 ![Example Diagram](examples/minimal.png)
