@@ -3,7 +3,7 @@
 QPML is a YAML-based DSL for describing query plans, expression trees, or any other tree structure, for the purposes 
 of producing diagrams and textual representations for use in documentation and presentations.
 
-Here is a minimal example of a qpml file. See [examples/example1.yaml](examples/example1.yaml) for a fuller example.
+Here is a minimal example of a qpml file. See [examples/nested-join.yaml](examples/nested-join.yaml) for a fuller example.
 
 ```yaml
 diagram:

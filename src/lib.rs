@@ -151,12 +151,9 @@ fn _generate_dot(id: String, node: &Node, styles: &HashMap<String,Style>, invert
     if let Some(s) = &node.style {
         if let Some(def) = styles.get(s) {
             dot_node.color = Some(def.color.clone());
-            //dot_node.style = Some("filled".clone());
-        } else {
-            println!("Warning! Node refers to undefined style '{}'", s);
+            dot_node.fill_color = Some(def.color.clone());
+            dot_node.style = Some("filled".to_owned());
         }
-    } else {
-
     }
     println!("{}", dot_node);
 

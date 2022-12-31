@@ -1,50 +1,50 @@
 diagram:
-title: 'Inner Join:\ncs_ship_date_sk = d3.d_date_sk'
-style: join
-inputs:
-  - title: 'Inner Join:\ninv_date_sk = d2.d_date_sk'
-    style: join
-    inputs:
-      - title: 'Inner Join:\ncs_sold_date_sk = d1.d_date_sk'
-        style: join
-        inputs:
-          - title: 'Inner Join:\ncs_bill_hdemo_sk = hd_demo_sk'
-            style: join
-            inputs:
-              - title: 'Inner Join:\ncs_bill_cdemo_sk = cd_demo_sk'
-                style: join
-                inputs:
-                  - title: 'Inner Join:\ni_item_sk = cs_item_sk'
-                    style: join
-                    inputs:
-                      - title: 'Inner Join:\nw_warehouse_sk = inv_warehouse_sk'
-                        style: join
-                        inputs:
-                          - title: 'Inner Join:\ncs_item_sk = inv_item_sk'
-                            style: join
-                            inputs:
-                              - title: catalog_sales
-                                style: scan_fact
-                              - title: inventory
-                                style: scan_fact
-                          - title: warehouse
-                            style: scan_dim
-                      - title: item
-                        style: scan_dim
-                  - title: customer_demographics
-                    style: scan_dim
-              - title: household_demographics
-                style: scan_dim
-          - title: d1
-            style: scan_dim
-      - title: d2
-        style: scan_dim
-  - title: d3
-    style: scan_dim
+  title: 'Inner Join:\ncs_ship_date_sk = d3.d_date_sk'
+  style: join
+  inputs:
+    - title: 'Inner Join:\ninv_date_sk = d2.d_date_sk'
+      style: join
+      inputs:
+        - title: 'Inner Join:\ncs_sold_date_sk = d1.d_date_sk'
+          style: join
+          inputs:
+            - title: 'Inner Join:\ncs_bill_hdemo_sk = hd_demo_sk'
+              style: join
+              inputs:
+                - title: 'Inner Join:\ncs_bill_cdemo_sk = cd_demo_sk'
+                  style: join
+                  inputs:
+                    - title: 'Inner Join:\ni_item_sk = cs_item_sk'
+                      style: join
+                      inputs:
+                        - title: 'Inner Join:\nw_warehouse_sk = inv_warehouse_sk'
+                          style: join
+                          inputs:
+                            - title: 'Inner Join:\ncs_item_sk = inv_item_sk'
+                              style: join
+                              inputs:
+                                - title: catalog_sales
+                                  style: scan_fact
+                                - title: inventory
+                                  style: scan_fact
+                            - title: warehouse
+                              style: scan_dim
+                        - title: item
+                          style: scan_dim
+                    - title: customer_demographics
+                      style: scan_dim
+                - title: household_demographics
+                  style: scan_dim
+            - title: d1
+              style: scan_dim
+        - title: d2
+          style: scan_dim
+    - title: d3
+      style: scan_dim
 styles:
-- name: scan_fact
-  color: lightblue
-  shape: rectangle
-- name: scan_dim
-  color: lightgreen
-  shape: rectangle
+  - name: scan_fact
+    color: lightblue
+    shape: rectangle
+  - name: scan_dim
+    color: lightgreen
+    shape: rectangle

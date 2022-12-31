@@ -1,13 +1,13 @@
 digraph G {
 
-node0 [shape=box; label="Inner Join: w_warehouse_sk = i\nnv_warehouse_sk"; color="lightgreen"];
+node0 [shape=box; label="Inner Join: w_warehouse_sk = i\nnv_warehouse_sk"; color="lightgreen"; fillcolor="lightgreen"; style="filled"];
 	node0 -> node0_0;
-node0_0 [shape=box; label="Inner Join: cs_item_sk = inv_i\ntem_sk"; color="lightgreen"];
+node0_0 [shape=box; label="Inner Join: cs_item_sk = inv_i\ntem_sk"; color="lightgreen"; fillcolor="lightgreen"; style="filled"];
 	node0_0 -> node0_0_0;
-node0_0_0 [shape=box; label="catalog_sales"; color="lightblue"];
+node0_0_0 [shape=box; label="catalog_sales"; color="lightblue"; fillcolor="lightblue"; style="filled"];
 	node0_0 -> node0_0_1;
-node0_0_1 [shape=box; label="inventory"; color="lightblue"];
+node0_0_1 [shape=box; label="inventory"; color="lightblue"; fillcolor="lightblue"; style="filled"];
 	node0 -> node0_1;
-node0_1 [shape=box; label="warehouse"; color="lightblue"];
+node0_1 [shape=box; label="warehouse"; color="lightblue"; fillcolor="lightblue"; style="filled"];
 }
 
