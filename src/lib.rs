@@ -9,6 +9,7 @@ use std::fs;
 #[allow(clippy::vec_box)]
 pub struct Document {
     diagram: Box<Node>,
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
     styles: Vec<Style>
 }
 
