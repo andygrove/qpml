@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use datafusion::logical_expr::LogicalPlan;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
 use std::fs;
@@ -10,7 +10,13 @@ use std::fs;
 pub struct Document {
     diagram: Box<Node>,
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
-    styles: Vec<Style>
+    styles: Vec<Style>,
+}
+
+impl Document {
+    pub fn new(diagram: Box<Node>, styles: Vec<Style>) -> Self {
+        Self { diagram, styles }
+    }
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default)]
@@ -45,7 +51,7 @@ impl Node {
 pub struct Style {
     name: String,
     color: String,
-    shape: String
+    shape: String,
 }
 
 impl Style {
@@ -128,7 +134,6 @@ pub fn read_yaml(path: &str) -> Node {
 }
 
 pub fn generate_dot(doc: &Document, inverted: bool) {
-
     // build styles
     let mut styles: HashMap<String, Style> = HashMap::new();
     for style in &doc.styles {
@@ -140,7 +145,7 @@ pub fn generate_dot(doc: &Document, inverted: bool) {
     println!("}}\n");
 }
 
-fn _generate_dot(id: String, node: &Node, styles: &HashMap<String,Style>, inverted: bool) {
+fn _generate_dot(id: String, node: &Node, styles: &HashMap<String, Style>, inverted: bool) {
     let mut dot_node = DotNode {
         name: id.clone(),
         label: Some(node.title.clone()),
@@ -188,9 +193,14 @@ fn _generate_mermaid(id: String, node: &Node, inverted: bool) {
     }
 }
 
-/// Create QPML from a DataFusion logical plan
-pub fn from_datafusion(plan: &LogicalPlan) -> Box<Node> {
-    let children = plan.inputs().iter().map(|x| from_datafusion(x)).collect();
+/// Create QPML document from a DataFusion logical plan
+pub fn from_datafusion(plan: &LogicalPlan) -> Document {
+    let node = _from_datafusion(plan);
+    Document::new(node, vec![])
+}
+
+fn _from_datafusion(plan: &LogicalPlan) -> Box<Node> {
+    let children = plan.inputs().iter().map(|x| _from_datafusion(x)).collect();
     let mut node = Node::new("unknown", children);
     match plan {
         LogicalPlan::TableScan(scan) => {
@@ -287,7 +297,7 @@ mod tests {
             styles: vec![
                 Style::new("table", "blue", "rectangle"),
                 Style::new("operator", "green", "rectangle"),
-            ]
+            ],
         };
 
         let yaml = serde_yaml::to_string(&doc).unwrap();
