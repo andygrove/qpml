@@ -253,6 +253,7 @@ impl NodeWithIndent {
     }
 
     fn add_child(&mut self, child: Rc<RefCell<NodeWithIndent>>) {
+        // println!("adding '{}' (indent={}) to '{}' (indent={})", child.borrow().text, child.borrow().indent, self.text, self.indent);
         self.inputs.push(child);
     }
 
@@ -266,20 +267,25 @@ pub fn from_text_plan(filename: &PathBuf) -> Result<Document, Error> {
     let file = File::open(filename)?;
     let lines = BufReader::new(file).lines();
     let mut stack = vec![];
+    let mut stack_index = 0;
     for line in lines {
         let line = line?;
         if let Some(i) = line.find(|c: char| c.is_ascii_alphabetic()) {
             let node = Rc::new(RefCell::new(NodeWithIndent::new(i, &line[i..])));
             if stack.is_empty() {
                 stack.push(node);
-            } else if i > stack.last().unwrap().borrow().indent {
-                stack.last().unwrap().borrow_mut().add_child(node.clone());
+            } else if i > stack[stack_index].borrow().indent {
+                stack[stack_index].borrow_mut().add_child(node.clone());
                 stack.push(node.clone());
+                stack_index += 1;
             } else {
-                while i <= stack.last().unwrap().borrow().indent {
-                    stack.pop();
+                let mut parent_index = stack_index;
+                while i <= stack[parent_index].borrow().indent {
+                    parent_index -= 1;
                 }
-                stack.last().unwrap().borrow_mut().add_child(node);
+                stack[parent_index].borrow_mut().add_child(node.clone());
+                stack.push(node.clone());
+                stack_index += 1;
             }
         }
     }
