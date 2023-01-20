@@ -1,9 +1,15 @@
 use datafusion::logical_expr::LogicalPlan;
 use serde::{Deserialize, Serialize};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
 use std::fs;
+use std::fs::File;
+use std::io::BufRead;
+use std::io::{BufReader, Error};
+use std::path::PathBuf;
+use std::rc::Rc;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default)]
 #[allow(clippy::vec_box)]
@@ -19,7 +25,7 @@ impl Document {
     }
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Default, Clone)]
 #[allow(clippy::vec_box)]
 pub struct Node {
     title: String,
@@ -105,7 +111,7 @@ fn wrap(s: &str) -> String {
         let end = (i + line_len).min(s.len());
         let line = &s[i..end];
         // escape quotes
-        let line = line.replace("\"", "\\\"");
+        let line = line.replace('\"', "\\\"");
         ret.push_str(&line);
         if i + line_len < s.len() {
             ret.push_str("\\n");
@@ -228,6 +234,66 @@ fn _from_datafusion(plan: &LogicalPlan) -> Box<Node> {
         _ => {}
     }
     Box::new(node)
+}
+
+#[derive(Clone)]
+struct NodeWithIndent {
+    indent: usize,
+    text: String,
+    inputs: Vec<Rc<RefCell<NodeWithIndent>>>,
+}
+
+impl NodeWithIndent {
+    fn new(indent: usize, text: &str) -> Self {
+        Self {
+            indent,
+            text: text.to_string(),
+            inputs: vec![],
+        }
+    }
+
+    fn add_child(&mut self, child: Rc<RefCell<NodeWithIndent>>) {
+        // println!("adding '{}' (indent={}) to '{}' (indent={})", child.borrow().text, child.borrow().indent, self.text, self.indent);
+        self.inputs.push(child);
+    }
+
+    fn to_node(&self) -> Box<Node> {
+        let inputs = self.inputs.iter().map(|n| n.borrow().to_node()).collect();
+        Box::new(Node::new(&self.text, inputs))
+    }
+}
+
+pub fn from_text_plan(filename: &PathBuf) -> Result<Document, Error> {
+    let file = File::open(filename)?;
+    let lines = BufReader::new(file).lines();
+    let mut stack = vec![];
+    let mut stack_index = 0;
+    for line in lines {
+        let line = line?;
+        if let Some(i) = line.find(|c: char| c.is_ascii_alphabetic()) {
+            let node = Rc::new(RefCell::new(NodeWithIndent::new(i, &line[i..])));
+            if stack.is_empty() {
+                stack.push(node);
+            } else if i > stack[stack_index].borrow().indent {
+                stack[stack_index].borrow_mut().add_child(node.clone());
+                stack.push(node.clone());
+                stack_index += 1;
+            } else {
+                let mut parent_index = stack_index;
+                while i <= stack[parent_index].borrow().indent {
+                    parent_index -= 1;
+                }
+                stack[parent_index].borrow_mut().add_child(node.clone());
+                stack.push(node.clone());
+                stack_index += 1;
+            }
+        }
+    }
+    let doc = Document {
+        diagram: stack[0].borrow().to_node(),
+        styles: vec![],
+    };
+    Ok(doc)
 }
 
 #[cfg(test)]
