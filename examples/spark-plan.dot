@@ -1,0 +1,35 @@
+digraph G {
+
+node0 [shape=box; label="LocalLimit 10"];
+	node0 -> node0_0;
+node0_0 [shape=box; label="Sort [revenue#289 DESC NULLS L\nAST, o_orderdate#60 ASC NULLS \nFIRST], true"];
+	node0_0 -> node0_0_0;
+node0_0_0 [shape=box; label="Aggregate [l_orderkey#16L, o_o\nrderdate#60, o_shippriority#63\n], [l_orderkey#16L, sum(CheckO\nverflow((promote_precision(cas\nt(l_extendedprice#21 as decima\nl(12,2))) * promote_precision(\nCheckOverflow((1.00 - promote_\nprecision(cast(l_discount#22 a\ns decimal(12,2)))), DecimalTyp\ne(12,2), true))), DecimalType(\n24,4), true)) AS revenue#289, \no_orderdate#60, o_shippriority\n#63]"];
+	node0_0_0 -> node0_0_0_0;
+node0_0_0_0 [shape=box; label="Project [o_orderdate#60, o_shi\nppriority#63, l_orderkey#16L, \nl_extendedprice#21, l_discount\n#22]"];
+	node0_0_0_0 -> node0_0_0_0_0;
+node0_0_0_0_0 [shape=box; label="Join Inner, (l_orderkey#16L = \no_orderkey#56L)"];
+	node0_0_0_0_0 -> node0_0_0_0_0_0;
+node0_0_0_0_0_0 [shape=box; label="Project [o_orderkey#56L, o_ord\nerdate#60, o_shippriority#63]"];
+	node0_0_0_0_0_0 -> node0_0_0_0_0_0_0;
+node0_0_0_0_0_0_0 [shape=box; label="Join Inner, (c_custkey#0L = o_\ncustkey#57L)"];
+	node0_0_0_0_0_0_0 -> node0_0_0_0_0_0_0_0;
+node0_0_0_0_0_0_0_0 [shape=box; label="Project [c_custkey#0L]"];
+	node0_0_0_0_0_0_0_0 -> node0_0_0_0_0_0_0_0_0;
+node0_0_0_0_0_0_0_0_0 [shape=box; label="Filter ((isnotnull(c_mktsegmen\nt#6) AND (c_mktsegment#6 = HOU\nSEHOLD)) AND isnotnull(c_custk\ney#0L))"];
+	node0_0_0_0_0_0_0_0_0 -> node0_0_0_0_0_0_0_0_0_0;
+node0_0_0_0_0_0_0_0_0_0 [shape=box; label="Relation [c_custkey#0L,c_name#\n1,c_address#2,c_nationkey#3L,c\n_phone#4,c_acctbal#5,c_mktsegm\nent#6,c_comment#7] parquet"];
+	node0_0_0_0_0_0_0 -> node0_0_0_0_0_0_0_1;
+node0_0_0_0_0_0_0_1 [shape=box; label="Project [o_orderkey#56L, o_cus\ntkey#57L, o_orderdate#60, o_sh\nippriority#63]"];
+	node0_0_0_0_0_0_0_1 -> node0_0_0_0_0_0_0_1_0;
+node0_0_0_0_0_0_0_1_0 [shape=box; label="Filter ((isnotnull(o_orderdate\n#60) AND (o_orderdate#60 < 199\n5-03-21)) AND (isnotnull(o_cus\ntkey#57L) AND isnotnull(o_orde\nrkey#56L)))"];
+	node0_0_0_0_0_0_0_1_0 -> node0_0_0_0_0_0_0_1_0_0;
+node0_0_0_0_0_0_0_1_0_0 [shape=box; label="Relation [o_orderkey#56L,o_cus\ntkey#57L,o_orderstatus#58,o_to\ntalprice#59,o_orderdate#60,o_o\nrderpriority#61,o_clerk#62,o_s\nhippriority#63,o_comment#64] p\narquet"];
+	node0_0_0_0_0 -> node0_0_0_0_0_1;
+node0_0_0_0_0_1 [shape=box; label="Project [l_orderkey#16L, l_ext\nendedprice#21, l_discount#22]"];
+	node0_0_0_0_0_1 -> node0_0_0_0_0_1_0;
+node0_0_0_0_0_1_0 [shape=box; label="Filter ((isnotnull(l_shipdate#\n26) AND (l_shipdate#26 > 1995-\n03-21)) AND isnotnull(l_orderk\ney#16L))"];
+	node0_0_0_0_0_1_0 -> node0_0_0_0_0_1_0_0;
+node0_0_0_0_0_1_0_0 [shape=box; label="Relation [l_orderkey#16L,l_par\ntkey#17L,l_suppkey#18L,l_linen\number#19,l_quantity#20,l_exten\ndedprice#21,l_discount#22,l_ta\nx#23,l_returnflag#24,l_linesta\ntus#25,l_shipdate#26,l_commitd\nate#27,l_receiptdate#28,l_ship\ninstruct#29,l_shipmode#30,l_co\nmment#31] parquet"];
+}
+
