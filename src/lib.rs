@@ -114,7 +114,10 @@ fn wrap(s: &str) -> String {
         let line = line.replace('\"', "\\\"");
         ret.push_str(&line);
         if i + line_len < s.len() {
-            ret.push_str("\\n");
+            ret.push_str(
+                "\
+",
+            );
         }
         i += line_len;
     }
@@ -146,9 +149,15 @@ pub fn generate_dot(doc: &Document, inverted: bool) {
         styles.insert(style.name.clone(), style.to_owned());
     }
 
-    println!("digraph G {{\n");
+    println!(
+        "digraph G {{
+"
+    );
     _generate_dot("node0".to_owned(), &doc.diagram, &styles, inverted);
-    println!("}}\n");
+    println!(
+        "}}
+"
+    );
 }
 
 fn _generate_dot(id: String, node: &Node, styles: &HashMap<String, Style>, inverted: bool) {
@@ -207,31 +216,11 @@ pub fn from_datafusion(plan: &LogicalPlan) -> Document {
 
 fn _from_datafusion(plan: &LogicalPlan) -> Box<Node> {
     let children = plan.inputs().iter().map(|x| _from_datafusion(x)).collect();
-    let mut node = Node::new("unknown", children);
-    match plan {
-        LogicalPlan::TableScan(scan) => {
-            node.title = scan.table_name.clone();
-            node.style = Some("scan".to_owned());
-        }
-        LogicalPlan::Filter(filter) => {
-            node.title = format!("Filter: {}", filter.predicate());
-            node.style = Some("filter".to_owned());
-        }
-        LogicalPlan::Projection(projection) => {
-            let expr: Vec<String> = projection.expr.iter().map(|e| format!("{}", e)).collect();
-            node.title = format!("Projection: {}", expr.join(", "));
-            node.style = Some("projection".to_owned());
-        }
-        LogicalPlan::Join(join) => {
-            let join_cols: Vec<String> = join
-                .on
-                .iter()
-                .map(|(l, r)| format!("{} = {}", l, r))
-                .collect();
-            node.title = format!("Join: {}", join_cols.join(" AND "));
-            node.style = Some("join".to_owned());
-        }
-        _ => {}
+    let text = format!("{}", plan.display());
+    let mut node = Node::new(&text, children);
+    if let Some(i) = text.find(':') {
+        let name = &text[0..i];
+        node.style = Some(name.to_string().to_lowercase());
     }
     Box::new(node)
 }
@@ -299,6 +288,7 @@ pub fn from_text_plan(filename: &PathBuf) -> Result<Document, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use datafusion::prelude::{CsvReadOptions, SessionContext};
 
     #[test]
     fn test_read_yaml() {
@@ -371,5 +361,25 @@ mod tests {
 
         let doc2: Document = serde_yaml::from_str(&yaml).unwrap();
         println!("{:?}", doc2);
+    }
+
+    #[tokio::test]
+    async fn test_from_df() -> Result<(), Error> {
+        let ctx = SessionContext::default();
+        ctx.register_csv("test", "testdata/test.csv", CsvReadOptions::default())
+            .await?;
+        let df = ctx.sql("select * from test").await?;
+        let plan = df.logical_plan();
+        let doc = from_datafusion(plan);
+        let yaml = serde_yaml::to_string(&doc).unwrap();
+        let expected = r"diagram:
+  title: 'Projection: test.id, test.name'
+  style: projection
+  inputs:
+  - title: 'TableScan: test'
+    style: tablescan
+";
+        assert_eq!(expected.to_string(), yaml);
+        Ok(())
     }
 }
