@@ -181,9 +181,15 @@ fn _generate_dot(id: String, node: &Node, styles: &HashMap<String, Style>, inver
     for (i, p) in node.inputs.iter().enumerate() {
         let child_id = format!("{}_{}", id, i);
         if inverted {
-            println!("\t{} -> {};", child_id, id);
+            println!(
+                "\t{} -> {} [arrowhead=normal, arrowtail=none, dir=forward];",
+                child_id, id
+            );
         } else {
-            println!("\t{} -> {};", id, child_id);
+            println!(
+                "\t{} -> {} [arrowhead=none, arrowtail=normal, dir=back];",
+                id, child_id
+            );
         }
         _generate_dot(child_id.clone(), p, styles, inverted);
     }
@@ -259,7 +265,7 @@ pub fn from_text_plan(filename: &PathBuf) -> Result<Document, Error> {
     let mut stack_index = 0;
     for line in lines {
         let line = line?;
-        if let Some(i) = line.find(|c: char| c.is_ascii_alphabetic()) {
+        if let Some(i) = line.find(|c: char| c == '*' || c.is_ascii_alphabetic()) {
             let node = Rc::new(RefCell::new(NodeWithIndent::new(i, &line[i..])));
             if stack.is_empty() {
                 stack.push(node);
