@@ -1,4 +1,4 @@
-use qpml::from_text_plan;
+use qpml::{from_text_plan, import_substrait};
 use std::fs;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -30,9 +30,15 @@ enum Opt {
         #[structopt(parse(from_os_str))]
         input: PathBuf,
     },
+    /// Import a Substrait plan and convert to QPML
+    ImportSubstrait {
+        #[structopt(parse(from_os_str))]
+        input: PathBuf,
+    },
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     match Opt::from_args() {
         Opt::Print { input } => {
             let yaml = fs::read_to_string(input).expect("Unable to read file");
@@ -51,6 +57,11 @@ fn main() {
         }
         Opt::ImportText { input } => {
             let doc = from_text_plan(&input).unwrap();
+            let str = serde_yaml::to_string(&doc).unwrap();
+            println!("{}", str);
+        }
+        Opt::ImportSubstrait { input } => {
+            let doc = import_substrait(&input).await.unwrap();
             let str = serde_yaml::to_string(&doc).unwrap();
             println!("{}", str);
         }
