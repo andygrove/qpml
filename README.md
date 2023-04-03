@@ -1,9 +1,11 @@
-# Query Plan Markup Language (QPML)
+# QPML
 
-QPML is a YAML-based DSL for describing query plans, expression trees, or any other tree structure, for the purposes 
-of producing diagrams and textual representations for use in documentation and presentations.
+QPML is a utility for visualizing query plans, intended to help produce documentation and presentations.
 
-Here is a minimal example of a qpml file. See [examples/nested-join.yaml](examples/nested-join.yaml) for a fuller example.
+Query plan diagrams can easily be hand-coded in the YAML-based Query Plan Markup Language, or can be imported 
+from Substrait query plans, or from text representations of query plans, as displayed by an EXPLAIN command. 
+
+Here is a minimal example of a QPML file. See [examples/nested-join.yaml](examples/nested-join.yaml) for a fuller example.
 
 ```yaml
 diagram:
@@ -30,6 +32,15 @@ styles:
 
 # Example Generated Output 
 
+## GraphViz
+
+```shell
+qpml dot minimal.qpml > minimal.dot
+dot -Tpng minimal.dot > minimal.png
+```
+
+![Example Diagram](examples/minimal.png)
+
 ## GitHub Mermaid Diagram
 
 ```shell
@@ -43,15 +54,6 @@ node0_0[Inner Join: cs_item_sk = inv_item_sk] --> node0_0_0[catalog_sales]
 node0_0[Inner Join: cs_item_sk = inv_item_sk] --> node0_0_1[inventory]
 node0[Inner Join: w_warehouse_sk = inv_warehouse_sk] --> node0_1[warehouse]
 ```
-
-## GraphViz
-
-```shell
-qpml dot minimal.qpml > minimal.dot
-dot -Tpng minimal.dot > minimal.png
-```
-
-![Example Diagram](examples/minimal.png)
 
 ## Text
 

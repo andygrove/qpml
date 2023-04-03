@@ -1,4 +1,7 @@
 use datafusion::logical_expr::LogicalPlan;
+use datafusion::prelude::SessionContext;
+use datafusion_substrait::logical_plan::consumer::from_substrait_plan;
+use datafusion_substrait::serializer::deserialize;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -289,6 +292,15 @@ pub fn from_text_plan(filename: &PathBuf) -> Result<Document, Error> {
         styles: vec![],
     };
     Ok(doc)
+}
+
+pub async fn import_substrait(path: &PathBuf) -> Result<Document, Error> {
+    let path = format!("{}", path.display());
+    let proto = deserialize(&path).await?;
+    let mut ctx = SessionContext::new();
+    let plan = from_substrait_plan(&mut ctx, &proto).await?;
+    let node = _from_datafusion(&plan);
+    Ok(Document::new(node, vec![]))
 }
 
 #[cfg(test)]
