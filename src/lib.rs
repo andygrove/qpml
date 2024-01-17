@@ -325,7 +325,7 @@ pub async fn import_sql(path: &PathBuf, dir: &PathBuf) -> Result<Document, Error
 
 
     let plan = ctx.sql(&sql).await?;
-    let node = _from_datafusion(&plan.into_unoptimized_plan());
+    let node = _from_datafusion(&plan.into_optimized_plan()?);
     Ok(Document::new(node, vec![]))
 }
 
