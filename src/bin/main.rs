@@ -1,4 +1,4 @@
-use qpml::{from_text_plan, import_substrait};
+use qpml::{from_text_plan, import_sql, import_substrait};
 use std::fs;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -35,6 +35,12 @@ enum Opt {
         #[structopt(parse(from_os_str))]
         input: PathBuf,
     },
+    /// Generate from a SQL query file
+    ImportSql {
+        #[structopt(parse(from_os_str))]
+        input: PathBuf,
+        tables: PathBuf,
+    }
 }
 
 #[tokio::main]
@@ -62,6 +68,11 @@ async fn main() {
         }
         Opt::ImportSubstrait { input } => {
             let doc = import_substrait(&input).await.unwrap();
+            let str = serde_yaml::to_string(&doc).unwrap();
+            println!("{}", str);
+        }
+        Opt::ImportSql { input, tables } => {
+            let doc = import_sql(&input, &tables).await.unwrap();
             let str = serde_yaml::to_string(&doc).unwrap();
             println!("{}", str);
         }
