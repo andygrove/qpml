@@ -1,5 +1,10 @@
+use datafusion::error::DataFusionError;
 use datafusion::logical_expr::LogicalPlan;
-use datafusion::prelude::{AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions, SessionContext};
+use datafusion::parquet::errors::ParquetError;
+use datafusion::prelude::{
+    AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
+    SessionContext,
+};
 use datafusion_substrait::logical_plan::consumer::from_substrait_plan;
 use datafusion_substrait::serializer::deserialize;
 use serde::{Deserialize, Serialize};
@@ -13,8 +18,6 @@ use std::io::{BufRead, ErrorKind};
 use std::io::{BufReader, Error};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
-use datafusion::error::DataFusionError;
-use datafusion::parquet::errors::ParquetError;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default)]
 #[allow(clippy::vec_box)]
@@ -314,15 +317,15 @@ pub async fn import_sql(path: &PathBuf, dir: &PathBuf) -> Result<Document, Error
     let paths = fs::read_dir(dir)?;
     for path in paths {
         let path = path?.path();
-        let file_name =
-            path.file_stem().unwrap().to_str().ok_or_else(|| {
-                DataFusionError::Internal("Invalid filename".to_string())
-            })?;
+        let file_name = path
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .ok_or_else(|| DataFusionError::Internal("Invalid filename".to_string()))?;
         let table_name = sanitize_table_name(file_name);
         println!("Registering table '{}' for {}", table_name, path.display());
         register_table(&ctx, &table_name, parse_filename(&path)?).await?;
     }
-
 
     let plan = ctx.sql(&sql).await?;
     let node = _from_datafusion(&plan.into_optimized_plan()?);
@@ -373,7 +376,7 @@ pub async fn register_table(
                     ..Default::default()
                 },
             )
-                .await?
+            .await?
         }
     }
     ctx.table(table_name).await.map_err(Error::from)
@@ -407,7 +410,6 @@ pub fn file_ending(filename: &str) -> Result<String, QpmlError> {
         ))
     }
 }
-
 
 #[derive(Debug)]
 pub enum FileFormat {
@@ -449,7 +451,6 @@ impl From<QpmlError> for std::io::Error {
         Error::new(ErrorKind::Other, format!("{value:?}"))
     }
 }
-
 
 #[cfg(test)]
 mod tests {

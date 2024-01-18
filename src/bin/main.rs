@@ -38,9 +38,12 @@ enum Opt {
     /// Generate from a SQL query file
     ImportSql {
         #[structopt(parse(from_os_str))]
+        /// Path to file containing SQL query
         input: PathBuf,
+        #[structopt(parse(from_os_str))]
+        /// Path to data files
         tables: PathBuf,
-    }
+    },
 }
 
 #[tokio::main]
