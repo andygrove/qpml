@@ -1,5 +1,10 @@
+use datafusion::error::DataFusionError;
 use datafusion::logical_expr::LogicalPlan;
-use datafusion::prelude::SessionContext;
+use datafusion::parquet::errors::ParquetError;
+use datafusion::prelude::{
+    AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
+    SessionContext,
+};
 use datafusion_substrait::logical_plan::consumer::from_substrait_plan;
 use datafusion_substrait::serializer::deserialize;
 use serde::{Deserialize, Serialize};
@@ -9,9 +14,9 @@ use std::fmt;
 use std::fmt::Formatter;
 use std::fs;
 use std::fs::File;
-use std::io::BufRead;
+use std::io::{BufRead, ErrorKind};
 use std::io::{BufReader, Error};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default)]
@@ -301,6 +306,150 @@ pub async fn import_substrait(path: &PathBuf) -> Result<Document, Error> {
     let plan = from_substrait_plan(&mut ctx, &proto).await?;
     let node = _from_datafusion(&plan);
     Ok(Document::new(node, vec![]))
+}
+
+pub async fn import_sql(path: &PathBuf, dir: &PathBuf) -> Result<Document, Error> {
+    let path = format!("{}", path.display());
+    let sql = fs::read_to_string(&path)?;
+    let ctx = SessionContext::new();
+
+    // register tables
+    let paths = fs::read_dir(dir)?;
+    for path in paths {
+        let path = path?.path();
+        let file_name = path
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .ok_or_else(|| DataFusionError::Internal("Invalid filename".to_string()))?;
+        let table_name = sanitize_table_name(file_name);
+        println!("Registering table '{}' for {}", table_name, path.display());
+        register_table(&ctx, &table_name, parse_filename(&path)?).await?;
+    }
+
+    let plan = ctx.sql(&sql).await?;
+    let node = _from_datafusion(&plan.into_optimized_plan()?);
+    Ok(Document::new(node, vec![]))
+}
+
+// following code copied from bdt
+
+pub fn sanitize_table_name(name: &str) -> String {
+    let mut str = String::new();
+    for ch in name.chars() {
+        if ch.is_ascii_alphanumeric() || ch == '_' {
+            str.push(ch);
+        } else {
+            str.push('_')
+        }
+    }
+    str
+}
+
+pub async fn register_table(
+    ctx: &SessionContext,
+    table_name: &str,
+    filename: &str,
+) -> Result<DataFrame, Error> {
+    match file_format(filename)? {
+        FileFormat::Arrow => {
+            unimplemented!()
+        }
+        FileFormat::Avro => {
+            ctx.register_avro(table_name, filename, AvroReadOptions::default())
+                .await?
+        }
+        FileFormat::Csv => {
+            ctx.register_csv(table_name, filename, CsvReadOptions::default())
+                .await?
+        }
+        FileFormat::Json => {
+            ctx.register_json(table_name, filename, NdJsonReadOptions::default())
+                .await?
+        }
+        FileFormat::Parquet => {
+            ctx.register_parquet(
+                table_name,
+                filename,
+                ParquetReadOptions {
+                    file_extension: &file_ending(filename)?,
+                    ..Default::default()
+                },
+            )
+            .await?
+        }
+    }
+    ctx.table(table_name).await.map_err(Error::from)
+}
+
+pub fn file_format(filename: &str) -> Result<FileFormat, QpmlError> {
+    match file_ending(filename)?.as_str() {
+        "avro" => Ok(FileFormat::Avro),
+        "csv" => Ok(FileFormat::Csv),
+        "json" => Ok(FileFormat::Json),
+        "parquet" | "parq" => Ok(FileFormat::Parquet),
+        other => Err(QpmlError::General(format!(
+            "unsupported file extension '{}'",
+            other
+        ))),
+    }
+}
+
+pub fn parse_filename(filename: &Path) -> Result<&str, QpmlError> {
+    filename
+        .to_str()
+        .ok_or_else(|| /*&Error::General("Invalid filename".to_string())*/ todo!())
+}
+
+pub fn file_ending(filename: &str) -> Result<String, QpmlError> {
+    if let Some(ending) = std::path::Path::new(filename).extension() {
+        Ok(ending.to_string_lossy().to_string())
+    } else {
+        Err(QpmlError::General(
+            "Could not determine file extension".to_string(),
+        ))
+    }
+}
+
+#[derive(Debug)]
+pub enum FileFormat {
+    Arrow,
+    Avro,
+    Csv,
+    Json,
+    Parquet,
+}
+
+#[derive(Debug)]
+pub enum QpmlError {
+    General(String),
+    DataFusion(DataFusionError),
+    Parquet(ParquetError),
+    IoError(std::io::Error),
+}
+
+impl From<DataFusionError> for QpmlError {
+    fn from(e: DataFusionError) -> Self {
+        Self::DataFusion(e)
+    }
+}
+
+impl From<ParquetError> for QpmlError {
+    fn from(e: ParquetError) -> Self {
+        Self::Parquet(e)
+    }
+}
+
+impl From<std::io::Error> for QpmlError {
+    fn from(e: std::io::Error) -> Self {
+        Self::IoError(e)
+    }
+}
+
+impl From<QpmlError> for std::io::Error {
+    fn from(value: QpmlError) -> Self {
+        Error::new(ErrorKind::Other, format!("{value:?}"))
+    }
 }
 
 #[cfg(test)]
